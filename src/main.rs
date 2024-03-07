@@ -3,7 +3,7 @@ use anyhow::Result;
 use clap::Parser;
 use std::{
     env,
-    process::{exit, Command},
+    process::{exit, Command, Stdio},
 };
 /// Struct representing the options for running a Docker container.
 #[derive(Debug, Parser)]
@@ -47,7 +47,9 @@ fn main() -> Result<()> {
         .arg("-it")
         .arg("-d")
         .arg("--name")
-        .arg(args.name);
+        .arg(args.name)
+        .stdout(Stdio::inherit())
+        .stderr(Stdio::inherit());
 
     // Check if the `rm` flag is set and add the `--rm` argument if it is.
     if args.rm {
@@ -79,13 +81,5 @@ fn main() -> Result<()> {
     // Execute the command and capture the output.
     let output = command.output().expect("Failed to run the command");
 
-    // Check if the command was successful.
-    if output.status.success() {
-        // Print the output of the command.
-        println!("{}", String::from_utf8_lossy(&output.stdout));
-    } else {
-        // Print the error message.
-        eprintln!("{}", String::from_utf8_lossy(&output.stderr));
-    }
     exit(output.status.code().unwrap_or(1))
 }
